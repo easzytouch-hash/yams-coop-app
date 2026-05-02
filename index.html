@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="YAMS Teachers Cooperative Society - View your monthly savings statements, profile, and more.">
+  <meta name="theme-color" content="#1e3a8a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="YAMS Co-op">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  <link rel="manifest" href="manifest.json">
+  <title>YAMS Teachers Co-op</title>
+  <style>
+    /* ===== Design System ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #2563eb;
+      --accent-green: #6BBF3B;
+      --accent-green-dark: #4a9a26;
+      --bg-dark: #0f172a;
+      --bg-card: rgba(255, 255, 255, 0.05);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --glass-bg: rgba(30, 58, 138, 0.3);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: var(--font);
+      background: var(--bg-dark);
+      color: var(--text-primary);
+    }
+
+    /* ===== Splash / Loading Screen ===== */
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--bg-dark) 0%, var(--primary) 50%, var(--bg-dark) 100%);
+      background-size: 200% 200%;
+      animation: gradientShift 3s ease infinite;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    #splash-screen.fade-out {
+      opacity: 0;
+      transform: scale(1.05);
+      pointer-events: none;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .splash-icon {
+      width: 100px;
+      height: 100px;
+      border-radius: 24px;
+      box-shadow: 0 0 40px rgba(107, 191, 59, 0.3), var(--shadow);
+      animation: iconPulse 2s ease-in-out infinite;
+      margin-bottom: 24px;
+    }
+
+    @keyframes iconPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(107, 191, 59, 0.3); }
+      50% { transform: scale(1.05); box-shadow: 0 0 60px rgba(107, 191, 59, 0.5); }
+    }
+
+    .splash-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, #fff 0%, var(--accent-green) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .splash-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+
+    .loader-dots {
+      display: flex;
+      gap: 8px;
+    }
+    .loader-dots span {
+      width: 10px;
+      height: 10px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      animation: dotBounce 1.4s ease-in-out infinite;
+    }
+    .loader-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loader-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dotBounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ===== Install Banner ===== */
+    #install-banner {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 900;
+      padding: 16px 20px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--glass-border);
+      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .install-content {
+      max-width: 500px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .install-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+
+    .install-text h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .install-text p {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .install-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-install {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-install-primary {
+      background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-dark) 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(107, 191, 59, 0.3);
+    }
+    .btn-install-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(107, 191, 59, 0.4);
+    }
+
+    .btn-install-dismiss {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--glass-border);
+    }
+    .btn-install-dismiss:hover {
+      color: var(--text-primary);
+      border-color: var(--text-secondary);
+    }
+
+    /* ===== App Frame (iframe) ===== */
+    #app-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+
+    /* ===== Offline Message ===== */
+    #offline-msg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-dark);
+      text-align: center;
+      padding: 40px;
+    }
+
+    .offline-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+    }
+
+    .offline-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .offline-text {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      max-width: 300px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .btn-retry {
+      padding: 12px 32px;
+      background: var(--primary-light);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .btn-retry:hover { background: var(--primary); }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 480px) {
+      .install-content { flex-wrap: wrap; }
+      .install-actions { margin-left: 0; width: 100%; justify-content: stretch; }
+      .install-actions .btn-install { flex: 1; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Splash Screen -->
+  <div id="splash-screen">
+    <img src="icons/icon-192x192.png" alt="YAMS Co-op" class="splash-icon">
+    <div class="splash-title">YAMS TEACHERS CO-OP</div>
+    <div class="splash-subtitle">Member Financial Statement Portal</div>
+    <div class="loader-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- Install Banner -->
+  <div id="install-banner">
+    <div class="install-content">
+      <img src="icons/icon-192x192.png" alt="YAMS Co-op" class="install-icon">
+      <div class="install-text">
+        <h4>Install YAMS Co-op</h4>
+        <p>Add to your home screen for quick access</p>
+      </div>
+      <div class="install-actions">
+        <button class="btn-install btn-install-dismiss" id="btn-dismiss" onclick="dismissInstall()">Later</button>
+        <button class="btn-install btn-install-primary" id="btn-add" onclick="installApp()">Install</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Offline Message -->
+  <div id="offline-msg">
+    <div class="offline-icon">📡</div>
+    <div class="offline-title">You're Offline</div>
+    <div class="offline-text">
+      YAMS Co-op needs an internet connection to load your financial statements from the server.
+    </div>
+    <button class="btn-retry" onclick="retryConnection()">Try Again</button>
+  </div>
+
+  <!-- ============================================================
+       IMPORTANT: Replace the URL below with your actual
+       Google Apps Script Web App URL.
+       
+       It looks like: https://script.google.com/macros/s/XXXXXXXXX/exec
+       ============================================================ -->
+  <iframe 
+    id="app-frame" 
+    src="https://script.google.com/macros/s/AKfycbxcN4jQ8aefK_igXTGiPAf1CCy_PYW9ww5IN1oGOpmkB4dKJY8i9y-m5Kxspao8FQHE/exec"
+    allow="clipboard-write"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"
+  ></iframe>
+
+  <script>
+    // ===== CONFIG =====
+    // Replace this with your actual Apps Script deployment URL
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcN4jQ8aefK_igXTGiPAf1CCy_PYW9ww5IN1oGOpmkB4dKJY8i9y-m5Kxspao8FQHE/exec';
+
+    // ===== Service Worker Registration =====
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then((reg) => console.log('Service Worker registered:', reg.scope))
+        .catch((err) => console.warn('Service Worker registration failed:', err));
+    }
+
+    // ===== Splash Screen =====
+    const splash = document.getElementById('splash-screen');
+    const appFrame = document.getElementById('app-frame');
+
+    // Hide splash when iframe loads
+    appFrame.addEventListener('load', () => {
+      setTimeout(() => {
+        splash.classList.add('fade-out');
+        setTimeout(() => { splash.style.display = 'none'; }, 600);
+      }, 800); // Brief delay so the splash feels intentional
+    });
+
+    // Fallback: hide splash after 8 seconds even if iframe is slow
+    setTimeout(() => {
+      if (splash.style.display !== 'none') {
+        splash.classList.add('fade-out');
+        setTimeout(() => { splash.style.display = 'none'; }, 600);
+      }
+    }, 8000);
+
+    // ===== PWA Install Prompt =====
+    let deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      // Show install banner after a short delay
+      setTimeout(() => {
+        document.getElementById('install-banner').style.display = 'block';
+      }, 3000);
+    });
+
+    function installApp() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choice) => {
+        if (choice.outcome === 'accepted') {
+          console.log('App installed');
+        }
+        deferredPrompt = null;
+        document.getElementById('install-banner').style.display = 'none';
+      });
+    }
+
+    function dismissInstall() {
+      document.getElementById('install-banner').style.display = 'none';
+    }
+
+    // ===== Offline Detection =====
+    function checkOnline() {
+      if (!navigator.onLine) {
+        document.getElementById('offline-msg').style.display = 'flex';
+        appFrame.style.display = 'none';
+      } else {
+        document.getElementById('offline-msg').style.display = 'none';
+        appFrame.style.display = 'block';
+      }
+    }
+
+    function retryConnection() {
+      if (navigator.onLine) {
+        document.getElementById('offline-msg').style.display = 'none';
+        appFrame.style.display = 'block';
+        appFrame.src = APPS_SCRIPT_URL;
+      }
+    }
+
+    window.addEventListener('online', checkOnline);
+    window.addEventListener('offline', checkOnline);
+    checkOnline();
+  </script>
+
+</body>
+</html>
